@@ -1,18 +1,30 @@
 import { Outlet, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
+import { useState, useEffect } from 'react'
+import { examCategoriesApi } from '../../api/client.js'
 
 export default function AppLayout() {
   const { user, logout } = useAuth()
+  const [categories, setCategories] = useState([])
+  const [showRankingMenu, setShowRankingMenu] = useState(false)
   
+  useEffect(() => {
+    if (user) {
+      examCategoriesApi.list().then(setCategories).catch(() => {})
+    }
+  }, [user])
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-dark-900 via-dark-900 to-[#1a1a2e]">
       <nav className="sticky top-0 z-50 backdrop-blur-xl bg-dark-300/80 border-b border-dark-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-purple-500 bg-clip-text text-transparent">
-                QPlay Exams
-              </span>
+              <Link to={user ? "/categories" : "/login"}>
+                <span className="text-2xl font-bold bg-gradient-to-r from-primary-500 to-purple-500 bg-clip-text text-transparent">
+                  QPlay Exams
+                </span>
+              </Link>
             </div>
             
             <div className="flex items-center gap-2 flex-wrap">
@@ -42,6 +54,52 @@ export default function AppLayout() {
                   <Link to="/exams/history" className="px-3 py-2 text-sm font-medium text-dark-50 hover:text-white hover:bg-dark-200 rounded-lg transition-all">
                     Historial
                   </Link>
+                  
+                  {/* Ranking Dropdown */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowRankingMenu(!showRankingMenu)}
+                      onBlur={() => setTimeout(() => setShowRankingMenu(false), 200)}
+                      className="px-3 py-2 text-sm font-medium text-dark-50 hover:text-white hover:bg-dark-200 rounded-lg transition-all flex items-center gap-1"
+                    >
+                      Ranking
+                      <svg 
+                        className={`w-4 h-4 transition-transform ${showRankingMenu ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    
+                    {showRankingMenu && (
+                      <div className="absolute top-full right-0 mt-2 w-48 bg-dark-200 border border-dark-100 rounded-xl shadow-xl overflow-hidden">
+                        {categories.map(category => (
+                          <Link
+                            key={category.id}
+                            to={`/ranking/${category.id}`}
+                            className="block px-4 py-3 text-sm text-dark-50 hover:text-white hover:bg-dark-300 transition-all"
+                            onClick={() => setShowRankingMenu(false)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <svg className="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                              </svg>
+                              {category.name}
+                            </div>
+                          </Link>
+                        ))}
+                        {categories.length === 0 && (
+                          <div className="px-4 py-3 text-sm text-dark-50 text-center">
+                            No hay categorías
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
                   <Link to="/profile" className="px-3 py-2 text-sm font-medium text-dark-50 hover:text-white hover:bg-dark-200 rounded-lg transition-all">
                     Perfil
                   </Link>

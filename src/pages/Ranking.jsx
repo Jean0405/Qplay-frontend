@@ -32,8 +32,7 @@ export default function Ranking() {
   const [currentUserId, setCurrentUserId] = useState(null)
 
   useEffect(() => {
-    console.log("CATEGORY: ", categoryId);
-    
+    console.log('Cargando ranking para categoría ID:', categoryId)
     Promise.all([
       rankingApi.byCategory(parseInt(categoryId)),
       examCategoriesApi.list()

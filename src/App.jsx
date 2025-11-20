@@ -1,147 +1,48 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Categories from './pages/Categories'
-import Subjects from './pages/Subjects'
-import RecommendQuestion from './pages/RecommendQuestion'
-import GenerateExam from './pages/GenerateExam'
-import TakeExam from './pages/TakeExam'
-import ExamResult from './pages/ExamResult'
-import ExamHistory from './pages/ExamHistory'
-import Profile from './pages/Profile'
-import AdminPendingQuestions from './pages/AdminPendingQuestions'
-import Ranking from './pages/Ranking'
-import Navbar from './components/Navbar'
-
-function PrivateRoute({ children, adminOnly = false }) {
-  const { user, loading } = useAuth()
-  
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    )
-  }
-  
-  if (!user) return <Navigate to="/login" />
-  if (adminOnly && !user.isAdmin) return <Navigate to="/categories" />
-  
-  return children
-}
+import { Routes, Route, Navigate } from 'react-router-dom'
+import AppLayout from './pages/layouts/AppLayout.jsx'
+import AdminLayout from './pages/layouts/AdminLayout.jsx'
+import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
+import Profile from './pages/Profile.jsx'
+import Categories from './pages/Categories.jsx'
+import Subjects from './pages/Subjects.jsx'
+import Questions from './pages/Questions.jsx'
+import RecommendQuestion from './pages/RecommendQuestion.jsx'
+import GenerateExam from './pages/GenerateExam.jsx'
+import TakeExam from './pages/TakeExam.jsx'
+import ExamResult from './pages/ExamResult.jsx'
+import ExamHistory from './pages/ExamHistory.jsx'
+import Ranking from './pages/Ranking.jsx'
+import AdminPendingQuestions from './pages/AdminPendingQuestions.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-dark-400 text-white">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            
-            <Route path="/" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <Navigate to="/categories" />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/categories" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <Categories />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/subjects" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <Subjects />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/recommend" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <RecommendQuestion />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/exams/generate" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <GenerateExam />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/exams/take/:id" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <TakeExam />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/exams/result/:id" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <ExamResult />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/exams/history" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <ExamHistory />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/ranking/:categoryId" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <Ranking />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/profile" element={
-              <PrivateRoute>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <Profile />
-                </div>
-              </PrivateRoute>
-            } />
-            
-            <Route path="/admin/pending-questions" element={
-              <PrivateRoute adminOnly>
-                <Navbar />
-                <div className="container mx-auto px-4 py-8">
-                  <AdminPendingQuestions />
-                </div>
-              </PrivateRoute>
-            } />
-          </Routes>
-        </div>
-      </Router>
-    </AuthProvider>
+    <Routes>
+      <Route path="/" element={<AppLayout />}>
+        <Route index element={<Navigate to="/login" replace />} />
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="profile" element={<Profile />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="subjects" element={<Subjects />} />
+          <Route path="questions/:examCategoryId/:subjectId" element={<Questions />} />
+          <Route path="recommend" element={<RecommendQuestion />} />
+          <Route path="exams/generate" element={<GenerateExam />} />
+          <Route path="exams/take/:examId" element={<TakeExam />} />
+          <Route path="exams/result/:examId" element={<ExamResult />} />
+          <Route path="exams/history" element={<ExamHistory />} />
+          <Route path="ranking/:categoryId" element={<Ranking />} />
+        </Route>
+        <Route element={<ProtectedRoute requireAdmin />}>
+          <Route path="admin" element={<AdminLayout />}>
+            <Route path="questions/pending" element={<AdminPendingQuestions />} />
+          </Route>
+        </Route>
+      </Route>
+      <Route path="*" element={<div style={{padding:'2rem'}}>404</div>} />
+    </Routes>
   )
 }
 

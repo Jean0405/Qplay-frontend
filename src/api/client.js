@@ -58,8 +58,3 @@ export const examsApi = {
 export const rankingApi = {
   byCategory: (examCategoryId) => request(`/users/ranking/${examCategoryId}`)
 }
-
-export const usersApi = {
-  ranking: (examCategoryId) =>
-    api.get(`/users/ranking/${examCategoryId}`)
-}
